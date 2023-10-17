@@ -6,6 +6,9 @@ using UnityEngine.UIElements;
 
 public class SpeechEvaluator
 {
+    private readonly string textCorrectResult       = "<color=green>{0}</color>";
+    private readonly string textWrongResult         = "<color=red>{0}</color>";
+
     private StringSpeechCompare stringSpeechCompare = new StringSpeechCompare();
 
     /// <summary>
@@ -13,32 +16,32 @@ public class SpeechEvaluator
     /// </summary>
     /// <param name="text"></param>
     /// <param name="spokenText"></param>
-    /// <returns>Return the percent (up to 1) of accuracy</returns>
-    public float CompareSpeech(string text, string spokenText)
+    /// <returns>Return the percent (up to 1) of accuracy and the text colored with hit and misses</returns>
+    public (float, string) CompareSpeech(string text, string spokenText)
     {
-        string[] textWords =  text.Split();
+        string[] textWords = text.Split();
         string[] spokenTextWords = spokenText.Split();
 
         return ComparePhrases(textWords, spokenTextWords);
     }
 
-    public string GenerateNewPhrase()
-    {
-        return string.Empty;
-    }
-
-
-    public float ComparePhrases(string[] textWords, string[] spokenTextWords)
+    public (float, string) ComparePhrases(string[] textWords, string[] spokenTextWords)
     {
         float rightWords = 0;
+        bool[] rightWordsId = new bool[spokenTextWords.Length];
 
-        if(textWords.Length == spokenTextWords.Length)
+        if (textWords.Length == spokenTextWords.Length)
         {
             for (int i = 0; i < textWords.Length; i++)
             {
-                if(MatchWord(textWords[i], spokenTextWords[i]))
+                if (MatchWord(textWords[i], spokenTextWords[i]))
                 {
                     rightWords++;
+                    rightWordsId[i] = true;
+                }
+                else
+                {
+                    rightWordsId[i] = false;
                 }
             }
         }
@@ -47,12 +50,12 @@ public class SpeechEvaluator
             int j = 0;
             bool unmatchAlmostUncompletely;
             for (int i = 0; i < textWords.Length; i++)
-            {                
+            {
                 if (MatchWord(textWords[i], spokenTextWords[j], out unmatchAlmostUncompletely))
                 {
                     rightWords++;
                 }
-                else if(unmatchAlmostUncompletely)
+                else if (unmatchAlmostUncompletely)
                 {
                     i--;
                 }
@@ -63,21 +66,35 @@ public class SpeechEvaluator
             }
         }
 
-        return rightWords / textWords.Length;
+        return (rightWords / textWords.Length, GenerateResultText(textWords, rightWordsId));
     }
 
-    public bool MatchWord(string correct, string spoken)
+    private bool MatchWord(string correct, string spoken)
     {
         float percentWrong = stringSpeechCompare.LevenshteinDistance(correct, spoken) / correct.Length;
 
         return percentWrong < 0.25f;
     }
 
-    public bool MatchWord(string correct, string spoken, out bool unmatchAlmostUncompletely)
+    private bool MatchWord(string correct, string spoken, out bool unmatchAlmostUncompletely)
     {
         float percentWrong = stringSpeechCompare.LevenshteinDistance(correct, spoken) / correct.Length;
 
         unmatchAlmostUncompletely = percentWrong > 0.85f;
         return percentWrong < 0.25f;
+    }
+
+    private string GenerateResultText(string[] textWords, bool[] rightWordsId)
+    {
+        string resultText = "";
+
+        for (int i = 0; i < textWords.Length; i++)
+        {
+            if (i > 0)
+                resultText += " ";
+            resultText += string.Format(rightWordsId[i] ? textCorrectResult : textWrongResult, textWords[i]);
+        }
+
+        return resultText;
     }
 }

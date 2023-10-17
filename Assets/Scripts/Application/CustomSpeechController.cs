@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.UI;
 using Whisper;
@@ -24,6 +26,8 @@ public class CustomSpeechController : MonoBehaviour
 
     private SpeechEvaluator speechEvaluator = new SpeechEvaluator();
     private State currentState = State.Ready;
+    private string rawInputText = string.Empty;
+    private bool startedEditingInput;
 
     private enum State
     {
@@ -39,6 +43,8 @@ public class CustomSpeechController : MonoBehaviour
         recordButton.onClick.AddListener(OnRecordButtonPressed);
         microfoneController.whisper.OnNewSegment += OnNewSegment;
         microfoneController.record.OnRecordStop += OnRecordStop;
+        inputTextToSpeak.onSelect.AddListener(SetRawInputText); 
+        inputTextToSpeak.onEndEdit.AddListener(SaveRawInputText); 
     }
 
     /// <summary>
@@ -47,14 +53,16 @@ public class CustomSpeechController : MonoBehaviour
     /// <param name="segment"></param>
     private void OnNewSegment(WhisperSegment segment)
     {
-        float result = speechEvaluator.CompareSpeech(textToSpeak.text, segment.Text);
-
-        if( result >= 0.9f)
+        var result = speechEvaluator.CompareSpeech(textToSpeak.text, FormatSpokenWord(segment.Text));
+        float accuracy = result.Item1;
+        inputTextToSpeak.text = result.Item2;
+        
+        if (accuracy >= 0.9f)
         {
             // TODO: Play PS
             resultText.text = "Excelente, sua pronuncia é ótima!";
         }
-        else if( result >= 0.7f)
+        else if(accuracy >= 0.7f)
         {
             // TODO: Play PS
             resultText.text = "Muito bom! Foi quase perfeito!";
@@ -92,7 +100,7 @@ public class CustomSpeechController : MonoBehaviour
             SetState(State.VerifyingError);
             return;
         }
-    }
+    }    
 
     private void SetState(State newState)
     {
@@ -127,4 +135,23 @@ public class CustomSpeechController : MonoBehaviour
 
         currentState = newState;
     }
+
+    private string FormatSpokenWord(string word)
+    {
+        int i = 0;
+        while (i < word.Length) 
+        {
+            if (char.IsLetter(word[i]))
+                break;
+            i++;
+        }
+
+        if (i == 0)
+            return word;
+        else
+            return word.Substring(i, word.Length - i - 1);
+    }
+
+    private void SetRawInputText(string input) => inputTextToSpeak.text = rawInputText;
+    private void SaveRawInputText(string input) => rawInputText = input;
 }
