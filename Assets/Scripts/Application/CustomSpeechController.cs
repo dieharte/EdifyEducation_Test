@@ -23,6 +23,7 @@ public class CustomSpeechController : MonoBehaviour
     [SerializeField] private TMP_InputField inputTextToSpeak;
     [SerializeField] private TextMeshProUGUI textToSpeak;
     [SerializeField] private TextMeshProUGUI resultText;
+    [SerializeField] private ParticleSystem starsPS;
 
     private SpeechEvaluator speechEvaluator = new SpeechEvaluator();
     private State currentState = State.Ready;
@@ -59,12 +60,11 @@ public class CustomSpeechController : MonoBehaviour
         
         if (accuracy >= 0.9f)
         {
-            // TODO: Play PS
+            starsPS.Play();
             resultText.text = "Excelente, sua pronuncia é ótima!";
         }
         else if(accuracy >= 0.7f)
         {
-            // TODO: Play PS
             resultText.text = "Muito bom! Foi quase perfeito!";
         }
         else
