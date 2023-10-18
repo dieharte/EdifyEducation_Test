@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
@@ -86,15 +87,15 @@ public class SpeechEvaluator
 
     private string GenerateResultText(string[] textWords, bool[] rightWordsId)
     {
-        string resultText = "";
+        StringBuilder resultText = new StringBuilder("");
 
         for (int i = 0; i < textWords.Length; i++)
         {
             if (i > 0)
-                resultText += " ";
-            resultText += string.Format(rightWordsId[i] ? textCorrectResult : textWrongResult, textWords[i]);
+                resultText.Append(" ");
+            resultText.Append(string.Format(rightWordsId[i] ? textCorrectResult : textWrongResult, textWords[i]));
         }
 
-        return resultText;
+        return resultText.ToString();
     }
 }
