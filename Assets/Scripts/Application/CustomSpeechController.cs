@@ -28,7 +28,6 @@ public class CustomSpeechController : MonoBehaviour
     private SpeechEvaluator speechEvaluator = new SpeechEvaluator();
     private State currentState = State.Ready;
     private string rawInputText = string.Empty;
-    private bool startedEditingInput;
 
     private enum State
     {
@@ -54,7 +53,7 @@ public class CustomSpeechController : MonoBehaviour
     /// <param name="segment"></param>
     private void OnNewSegment(WhisperSegment segment)
     {
-        var result = speechEvaluator.CompareSpeech(textToSpeak.text, FormatSpokenWord(segment.Text));
+        var result = speechEvaluator.CompareSpeech(rawInputText, FormatSpokenWord(segment.Text));
         float accuracy = result.Item1;
         inputTextToSpeak.text = result.Item2;
         
