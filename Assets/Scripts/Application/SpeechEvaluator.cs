@@ -49,10 +49,9 @@ public class SpeechEvaluator
         else
         {
             bool unmatchAlmostUncompletely;
-            int min = Mathf.Min(textWords.Length, spokenTextWords[j]);
-            for (int i = 0; i < min; i++)
+            for (int i = 0; i < textWords.Length; i++)
             {
-                if (MatchWord(textWords[i], spokenTextWords[j], out unmatchAlmostUncompletely))
+                if (MatchWord(textWords[i], spokenTextWords[i], out unmatchAlmostUncompletely))
                 {
                     rightWords++;
                 }
